@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Saif Playlist Portal</title>
+<meta name="description" content="Add and manage IPTV playlists on your Saif TV app using its Device ID and Device Key." />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="top">
+  <div class="brand"><img src="favicon.svg" alt="" width="28" height="28" /> <span>Saif<b style="color:#e0306f"> TV</b></span><small>Playlist Portal</small></div>
+  <div id="session" class="session hidden">
+    <span>Device <strong id="session-device"></strong></span>
+    <button id="logout" class="btn ghost small" type="button">Sign out</button>
+  </div>
+</header>
+
+<main>
+  <div id="banner" class="banner hidden" role="status" aria-live="polite"></div>
+
+  <!-- step 1: device login -->
+  <section id="login-view" class="card narrow">
+    <h1>Manage your TV playlists</h1>
+    <p class="muted">Open <strong>Saif</strong> on your TV and go to <strong>Providers → Add from phone or computer</strong>. Enter the Device ID and Device Key shown there.</p>
+    <form id="login-form" autocomplete="off" novalidate>
+      <label>Device ID
+        <input id="device-id" name="deviceId" inputmode="text" placeholder="AA:BB:CC:DD:EE:FF" maxlength="17" required spellcheck="false" autocapitalize="characters" />
+      </label>
+      <label>Device Key
+        <input id="device-key" name="deviceKey" inputmode="numeric" placeholder="6-digit number" maxlength="6" required />
+      </label>
+      <button class="btn primary wide" type="submit">Connect to TV</button>
+    </form>
+  </section>
+
+  <!-- step 2: playlists -->
+  <section id="dash-view" class="hidden">
+    <div class="dash-head">
+      <div>
+        <h1>Playlists on this TV</h1>
+        <p class="muted" id="dash-sub">Changes appear on the TV automatically within a minute, or press <strong>Sync now</strong> on the TV.</p>
+      </div>
+      <button id="add-btn" class="btn primary" type="button">+ Add playlist</button>
+    </div>
+    <div id="empty" class="card empty hidden">
+      <p>No playlists yet.</p>
+      <p class="muted">Add the M3U link or the Xtream Codes login details your provider gave you.</p>
+    </div>
+    <ul id="list" class="list"></ul>
+  </section>
+
+  <!-- add / edit form -->
+  <section id="form-view" class="card hidden">
+    <h2 id="form-title">Add playlist</h2>
+    <form id="pl-form" autocomplete="off" novalidate>
+      <label>Playlist name
+        <input name="name" maxlength="60" placeholder="e.g. Main subscription" required />
+      </label>
+      <fieldset class="seg" id="type-seg">
+        <legend>Connection type</legend>
+        <label><input type="radio" name="type" value="m3u" checked /> <span>M3U / M3U8 URL</span></label>
+        <label><input type="radio" name="type" value="xtream" /> <span>Xtream Codes</span></label>
+      </fieldset>
+      <div data-type="m3u">
+        <label>Playlist URL
+          <input name="url" type="url" placeholder="http://provider.example/get.php?username=…&password=…&type=m3u_plus" spellcheck="false" />
+        </label>
+      </div>
+      <div data-type="xtream" class="hidden">
+        <label>Server URL
+          <input name="server" type="url" placeholder="http://provider.example:8080" spellcheck="false" />
+        </label>
+        <div class="row">
+          <label>Username <input name="username" spellcheck="false" autocapitalize="off" /></label>
+          <label>Password <input name="password" type="password" autocomplete="new-password" /></label>
+        </div>
+      </div>
+      <label>EPG / guide URL <span class="muted">(optional)</span>
+        <input name="epgUrl" type="url" placeholder="http://provider.example/xmltv.php?…" spellcheck="false" />
+      </label>
+      <div class="protect">
+        <label class="check"><input type="checkbox" name="protect" /> Protect this playlist with a PIN</label>
+        <p class="muted small">A protected playlist can only be viewed, changed or deleted on this website with its PIN.</p>
+        <label class="hidden" id="pin-wrap">PIN (4–8 digits)
+          <input name="pin" inputmode="numeric" maxlength="8" type="password" autocomplete="new-password" />
+        </label>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" type="button" id="cancel">Cancel</button>
+        <button class="btn primary" type="submit" id="save">Save playlist</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- PIN prompt -->
+  <dialog id="pin-dialog">
+    <form method="dialog" id="pin-form">
+      <h3>Playlist PIN</h3>
+      <p class="muted" id="pin-reason">This playlist is protected.</p>
+      <input name="pin" inputmode="numeric" maxlength="8" type="password" autocomplete="off" />
+      <div class="actions">
+        <button class="btn ghost" value="cancel" type="submit">Cancel</button>
+        <button class="btn primary" value="ok" type="submit">Continue</button>
+      </div>
+    </form>
+  </dialog>
+
+  <section class="card info">
+    <h2>For providers</h2>
+    <p class="muted">Playlists can also be added automatically with one HTTPS request:</p>
+    <pre><code>POST <span id="api-base"></span>/api/v1/push
+Content-Type: application/json
+
+{ "deviceId": "AA:BB:CC:DD:EE:FF", "deviceKey": "123456",
+  "playlist": { "name": "My IPTV", "type": "xtream",
+    "server": "http://host:port", "username": "…", "password": "…" } }</code></pre>
+  </section>
+</main>
+
+<footer class="foot">
+  Saif is a media player only. It does not provide, sell or host any channels or subscriptions — use playlists you are authorised to watch.
+</footer>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
